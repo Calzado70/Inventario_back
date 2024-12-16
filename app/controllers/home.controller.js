@@ -12,8 +12,13 @@ export const agregarProducto = (req, res) => {
     const nuevoProducto = { pareja, zona, codigo, conteo, talla, fecha: new Date().toLocaleString() };
     data.push(nuevoProducto);
 
-    res.json({ success: true, productos: data });
+    res.json({ success: true, productos: data }); // Retorna todos los productos para el frontend
 };
+
+export const obtenerProductos = (req, res) => {
+    res.json({ success: true, productos: data }); // Retorna los productos actuales
+};
+
 
 export const eliminarProducto = (req, res) => {
     const { codigo } = req.params;
@@ -42,11 +47,21 @@ export const exportToExcel = (req, res) => {
 
     data.forEach(item => worksheet.addRow(item));
 
-    res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-    res.setHeader("Content-Disposition", 'attachment; filename="inventario.xlsx"');
+    res.setHeader(
+        "Content-Type",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    );
+    res.setHeader(
+        "Content-Disposition",
+        'attachment; filename="inventario.xlsx"'
+    );
 
-    workbook.xlsx.write(res).then(() => {
-        data.length = 0;
-        res.end();
+    workbook.xlsx.writeBuffer().then(buffer => {
+        res.send(buffer); // Enviar el archivo como un buffer
+        data.length = 0; // Limpia los datos después de exportar
+    }).catch(err => {
+        console.error("Error al generar el archivo de Excel:", err);
+        res.status(500).send("Error al generar el archivo de Excel.");
     });
 };
+
